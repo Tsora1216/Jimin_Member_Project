@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Quiz</title>
+</head>
+
+<body>
+    <div id="question">Who is this person?</div>
+    <img id="image" src="">
+    <input type="text" id="answer">
+    <button id="start-btn">Start Quiz</button>
+    <button id="next-btn" style="display: none;">Next Question</button>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // Load CSV data
+            async function loadCSV(filename, callback) {
+                const response = await fetch(filename);
+                const data = await response.text();
+                const lines = data.split("\n");
+                const parsedData = [];
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (line.length === 0) {
+                        continue;
+                    }
+                    const parts = line.split(",");
+                    parsedData.push({
+                        name: parts[0].trim(),
+                        imageUrl: parts[1].trim(),
+                    });
+                }
+                callback(parsedData);
+            }
+
+            // Display question and prompt user for answer
+            function showRandomName(data) {
+                const index = Math.floor(Math.random() * data.length);
+                const name = data[index].name;
+                const imageUrl = data[index].imageUrl;
+                document.getElementById("question").innerHTML = "Who is this person?";
+                document.getElementById("image").src = imageUrl;
+                document.getElementById("answer").value = "";
+                document.getElementById("answer").focus();
+                document.getElementById("next-btn").style.display = "none";
+                document.getElementById("answer").addEventListener("keydown", function (e) {
+                    if (e.key === "Enter") {
+                        checkAnswer(data, name);
+                    }
+                });
+            }
+
+            function checkAnswer(data, name) {
+                const answer = document.getElementById("answer").value.trim().toLowerCase();
+                if (answer === name.toLowerCase()) {
+                    alert("Correct!");
+                } else {
+                    alert("Incorrect. The correct answer is: " + name);
+                }
+                document.getElementById("next-btn").style.display = "block";
+            }
+
+            document.getElementById("start-btn").addEventListener("click", function () {
+                loadCSV("output.csv", showRandomName);
+                document.getElementById("start-btn").style.display = "none";
+            });
+
+            document.getElementById("next-btn").addEventListener("click", function () {
+                loadCSV("output.csv", showRandomName);
+            });
+
+        });
+    </script>
+</body>
+
+</html>
